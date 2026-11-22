@@ -1,0 +1,6 @@
+{
+  "name": "Gujarat Sahayak",
+  "description": "Bilingual Gujarati and Hindi citizen portal for Gujarat government & private job portals, scholarships, college admissions, merit lists, government schemes, and step-by-step form help.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

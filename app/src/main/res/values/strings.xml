@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">Gujarat Sahayak</string>
+    <string name="cd_hero_banner">Gujarat Sahayak citizen portal banner</string>
+    <string name="cd_form_guide_banner">Step by step online form filling guide banner</string>
+    <string name="cd_open_official_link">Open official government website</string>
+    <string name="cd_bookmark_toggle">Toggle saved bookmark</string>
+    <string name="cd_back_navigation">Navigate back</string>
+    <string name="cd_clear_search">Clear search query</string>
+    <string name="cd_language_switch">Switch app language between Gujarati and Hindi</string>
+</resources>

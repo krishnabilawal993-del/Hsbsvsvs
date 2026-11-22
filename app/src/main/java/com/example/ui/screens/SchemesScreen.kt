@@ -1,0 +1,199 @@
+package com.example.ui.screens
+
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.automirrored.filled.Assignment
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import com.example.data.UiStrings
+import com.example.model.SchemeFilter
+import com.example.ui.ExternalActions
+import com.example.ui.components.DemoNoticeBanner
+import com.example.ui.components.EmptyStateView
+import com.example.ui.components.LanguageTogglePill
+import com.example.ui.components.PortalItemCard
+import com.example.ui.components.SahayakSearchBar
+import com.example.ui.components.TricolorAccentBar
+import com.example.viewmodel.SahayakUiState
+
+@Composable
+fun SchemesScreen(
+    uiState: SahayakUiState,
+    onToggleLanguage: () -> Unit,
+    onSearchChange: (String) -> Unit,
+    onSchemeFilterChange: (SchemeFilter) -> Unit,
+    onResetFilters: () -> Unit,
+    onOpenFormHelp: () -> Unit,
+    onItemClick: (String) -> Unit,
+    onBookmarkToggle: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val context = LocalContext.current
+    val language = uiState.language
+    val strings = UiStrings.get(language)
+    val schemes = uiState.filteredSchemes
+
+    LazyColumn(
+        modifier = modifier
+            .fillMaxSize()
+            .testTag("schemes_screen_list"),
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(14.dp)
+    ) {
+        item {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = strings.govtSchemesLabel,
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Bold
+                    )
+                    LanguageTogglePill(
+                        currentLanguage = language,
+                        onToggle = onToggleLanguage
+                    )
+                }
+                TricolorAccentBar()
+            }
+        }
+
+        item {
+            SahayakSearchBar(
+                query = uiState.schemesSearchQuery,
+                onQueryChange = onSearchChange,
+                placeholder = strings.searchPlaceholderSchemes,
+                testTagName = "schemes_search_input"
+            )
+        }
+
+        item {
+            val options = listOf(
+                SchemeFilter.ALL to strings.allLabel,
+                SchemeFilter.GUJARAT to strings.gujaratSchemesLabel,
+                SchemeFilter.CENTRAL to strings.centralSchemesLabel
+            )
+            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                items(options) { (filter, label) ->
+                    val selected = uiState.schemeFilter == filter
+                    FilterChip(
+                        selected = selected,
+                        onClick = { onSchemeFilterChange(filter) },
+                        label = { Text(label, fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium) },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = MaterialTheme.colorScheme.primary,
+                            selectedLabelColor = MaterialTheme.colorScheme.onPrimary
+                        ),
+                        modifier = Modifier.testTag("scheme_filter_${filter.name.lowercase()}")
+                    )
+                }
+            }
+        }
+
+        // Form Help Shortcut Card
+        item {
+            Card(
+                onClick = onOpenFormHelp,
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.secondary.copy(alpha = 0.25f)),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag("schemes_form_help_shortcut")
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 14.dp, vertical = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.Assignment,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.secondary
+                    )
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = strings.formHelpBannerTitle,
+                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.onSecondaryContainer,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = strings.openFormHelpButton,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.secondary,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.secondary
+                    )
+                }
+            }
+        }
+
+        item {
+            DemoNoticeBanner(strings = strings)
+        }
+
+        if (schemes.isEmpty()) {
+            item {
+                EmptyStateView(
+                    title = strings.noResultsTitle,
+                    subtitle = strings.noResultsSubtitle,
+                    actionLabel = strings.clearFiltersLabel,
+                    onActionClick = onResetFilters
+                )
+            }
+        } else {
+            items(schemes, key = { it.id }) { item ->
+                PortalItemCard(
+                    item = item,
+                    language = language,
+                    isBookmarked = item.id in uiState.preferences.bookmarkedIds,
+                    onCardClick = { onItemClick(item.id) },
+                    onBookmarkClick = { onBookmarkToggle(item.id) },
+                    onOpenOfficialClick = {
+                        ExternalActions.openOfficialUrl(context, item.officialUrl, strings.openLinkError)
+                    }
+                )
+            }
+        }
+
+        item { Spacer(modifier = Modifier.height(12.dp)) }
+    }
+}
